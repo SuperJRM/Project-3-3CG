@@ -9,6 +9,7 @@ CARD_STATE = {
   GRABBED = 2
 }
 
+-- Creates a new card with given parameters
 function CardClass:new(xPos, yPos, cost, power, cardName, cardText)
   local card = {}
   local metadata = {__index = CardClass}
@@ -28,30 +29,27 @@ function CardClass:new(xPos, yPos, cost, power, cardName, cardText)
   return card
 end
 
-function CardClass:update()
-  --a
-end
-
+-- Draws a card
 function CardClass:draw()
-  -- Draws shadow if hovered over or grabbed
+  -- Draws shadow if card is hovered over or grabbed
   if self.state ~= CARD_STATE.IDLE then
     love.graphics.setColor(0, 0, 0, 0.8) -- color values [0, 1]
     local offset = 8 * (self.state == CARD_STATE.GRABBED and 2 or 1)
     love.graphics.rectangle("fill", self.position.x + offset, self.position.y + offset, self.size.x, self.size.y, 6, 6)
   end
   
-  -- Draws cards designs
+  -- Sets color to card's front or back
   if self.flipped == false then
     love.graphics.setColor(150, 0, 150, 1)
   else
     love.graphics.setColor(1, 1, 1, 1)
   end
-  -- Generic card draw
+  -- Draws generic card shape
   love.graphics.rectangle("fill", self.position.x, self.position.y, self.size.x, self.size.y, 6, 6)
   love.graphics.setColor(0, 0, 0, 1)
   love.graphics.rectangle("line", self.position.x, self.position.y, self.size.x, self.size.y, 6, 6)
   
-  -- Unique card draw
+  -- Draws unique card aspects
   if self.flipped == true then
     love.graphics.print(tostring(self.cost), self.position.x + 5, self.position.y)
     love.graphics.print(tostring(self.power), self.position.x + self.size.x - 10, self.position.y)

@@ -3,6 +3,7 @@ require "vector"
 
 GrabberClass = {}
 
+-- Creates a new grabber
 function GrabberClass:new()
   local grabber = {}
   local metadata = {__index = GrabberClass}
@@ -19,7 +20,7 @@ function GrabberClass:new()
 end
 
 function GrabberClass:update()
-  -- Update mouse pos
+  -- Updates mouse position
   checkPos = Vector(
     love.mouse.getX(), 
     love.mouse.getY())
@@ -27,7 +28,7 @@ function GrabberClass:update()
     self.currentMousePos = checkPos
   end
   
-  -- Find location currently below grabber
+  -- Finds location currently below grabber
   self.currentLocation = nil
   for _, loc in ipairs(gameTable) do
     locationCheck = loc:checkLocationOverlap(self.currentMousePos)
@@ -37,7 +38,7 @@ function GrabberClass:update()
     end
   end
   
-  -- Mouse inputs
+  -- Handles mouse inputs
   if love.mouse.isDown(1) then
     self:grab()
     self.onCooldown = true
@@ -48,18 +49,19 @@ function GrabberClass:update()
   end
 end
 
--- On mouse click
+-- Handles card grabbing
 function GrabberClass:grab()
   -- Moves already grabbed cards
   if self.heldObject ~= nil then
     self.heldObject.position = self.currentMousePos - (self.heldObject.size / 2)
   
-  -- Mouse is over a location
+  -- Handles empty grabber
   else
     if self.currentLocation ~= nil then
-      -- Grab from hand
+      -- Grabs from overlapping hand location
       if self.currentLocation.locationType == LOCATION_TYPE.HAND and 
       self.currentLocation.playerType == PLAYER_TYPE.PLAYER and self.onCooldown == false then
+        -- Checks each card if grabber is overlapping
         for i, checkCard in ipairs(self.currentLocation.cardList) do
           if isOverTarget(self.currentMousePos, checkCard) and checkCard.cost <= playerMana then
             self.pastLocation = self.currentLocation
@@ -71,16 +73,16 @@ function GrabberClass:grab()
         end
       end
       
-    -- If no location is selected, buttons
+    -- If no location is selected and grabber is empty
     else
-      -- End Turn Button
+      -- If End Turn Button is grabbed
       if (self.currentMousePos.x > WIDTH - 50 and self.currentMousePos.x < WIDTH + 100) and
       (self.currentMousePos.y > HEIGHT - 100 and self.currentMousePos.y < HEIGHT - 50) and 
       self.onCooldown == false and gameStatus == GAME_STATUS.PLAYER_TURN then
         enemyTurn(turn)
       end
       
-      -- Reset Button
+      -- If Reset Button is grabbed
       if (self.currentMousePos.x > 0 and self.currentMousePos.x < 250) and
       (self.currentMousePos.y > 250 and self.currentMousePos.y < 325) and 
       self.onCooldown == false and gameStatus == GAME_STATUS.PLAYER_TURN then
@@ -90,10 +92,10 @@ function GrabberClass:grab()
   end
 end
 
--- On mouse release
+-- Handles releasing cards
 function GrabberClass:release()
   if self.heldObject ~= nil then
-    -- Places gabbed cards into board location
+    -- Plays grabbed cards on overlapping board location
     if self.currentLocation ~= nil and self.currentLocation.locationType ~= LOCATION_TYPE.HAND and 
     #self.currentLocation.cardList < self.currentLocation.cardMax and self.currentLocation.playerType == PLAYER_TYPE.PLAYER then
       dropCard = self.heldObject
@@ -102,7 +104,7 @@ function GrabberClass:release()
       self.heldObject = nil
       self.pastObjectPos = nil
       
-    -- Returns held cards to previous position if new one is invalid
+    -- Returns held cards to previous location if new one is invalid
     else
       dropCard = self.heldObject
       dropCard.state = CARD_STATE.IDLE
@@ -112,7 +114,7 @@ function GrabberClass:release()
       self.pastObjectPos = nil
     end
 
-  -- Changes card states within current location
+  -- Changes states of cards hovered over within current location
   else
     if self.currentLocation ~= nil then
       for _, loc in ipairs(gameTable) do

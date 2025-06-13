@@ -24,6 +24,7 @@ CARD_SLOTS = {
 
 listoCards = {}
 
+-- Creates new locations matching given position and size parameters
 function LocationClass:new(xPos, yPos, xSize, ySize)
   local location = {}
   local metadata = {__index = LocationClass}
@@ -39,24 +40,19 @@ function LocationClass:new(xPos, yPos, xSize, ySize)
   return location
 end
 
-function LocationClass:update()
-end
-
+-- Draws locations
 function LocationClass:draw()
-  if self.locationType == LOCATION_TYPE.HAND then
-    love.graphics.setColor(0, 0, 0, 1)
-    love.graphics.rectangle("line", self.position.x, self.position.y, self.size.x, self.size.y)
-  else
-    love.graphics.setColor(0, 0, 0, 1)
-    love.graphics.rectangle("line", self.position.x, self.position.y, self.size.x, self.size.y)
-  end
+  -- Draws location outline
+  love.graphics.setColor(0, 0, 0, 1)
+  love.graphics.rectangle("line", self.position.x, self.position.y, self.size.x, self.size.y)
   
+  -- Draws each card in a location
   for _, locCard in ipairs(self.cardList) do
     locCard:draw()
   end
 end
 
--- Returns location below location, for grabber
+-- Returns a location below a given position, used for grabber overlap
 function LocationClass:checkLocationOverlap(currentPos)
   if isOverTarget(currentPos, self) == true then
     return self
@@ -65,6 +61,7 @@ function LocationClass:checkLocationOverlap(currentPos)
   end
 end
 
+-- Adds card to a board location, positions using CARD_SLOTS
 function LocationClass:addCard(cardAdded)
   cardAdded.state = CARD_STATE.IDLE
   offset = cardAdded.size * CARD_SLOTS[#self.cardList + 1]
@@ -72,8 +69,9 @@ function LocationClass:addCard(cardAdded)
   table.insert(self.cardList, cardAdded)
 end
 
+-- Updates cards below a given position
 function LocationClass:updateCards(currentPos)
-  -- Changes card states
+  -- Changes card states to match if hovered over
   if #self.cardList > 0 then
     for i = 1, #self.cardList do
       if self.cardList[i].flipped == true and isOverTarget(currentPos, self.cardList[i]) then
